@@ -14,4 +14,4 @@ const otpSchema = mongoose.Schema(
   { timestamps: true }
 );
 
-module.exports = mongoose.model("OTPS", otpSchema);
+module.exports = mongoose.model("EmployeeOTP", otpSchema);

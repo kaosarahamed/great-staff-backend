@@ -1,25 +1,40 @@
 const mongoose = require("mongoose");
 const shiftSchema = mongoose.Schema(
   {
+    title: {
+      type: String,
+    },
     startDate: {
       type: String,
     },
     startTime: {
-      type: Number,
+      type: String,
     },
-    status: {
+    urgency: {
       type: String,
     },
     location: {
-      type: String,
+      type: Object,
     },
-    takenTime: {
+    length: {
+      type: Number,
+    },
+    compensation: {
+      type: Number,
+    },
+    bonus: {
       type: Number,
     },
     description: {
       type: String,
     },
-    employeeID: {
+    businessId: {
+      type: String,
+    },
+    requirements: {
+      type: String,
+    },
+    status: {
       type: String,
     },
   },

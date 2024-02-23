@@ -1,5 +1,5 @@
 const mongoose = require("mongoose");
-const employeeSchema = mongoose.Schema(
+const businessSchema = mongoose.Schema(
   {
     firstname: {
       type: String,
@@ -17,10 +17,7 @@ const employeeSchema = mongoose.Schema(
     phone: {
       type: Number,
     },
-    address: {
-      type: String,
-    },
-    dateOfBirth: {
+    Organization: {
       type: String,
     },
     profile: {
@@ -29,23 +26,11 @@ const employeeSchema = mongoose.Schema(
     agreement: {
       type: Boolean,
     },
-    bio: {
+    description: {
       type: String,
-    },
-    totalHour: {
-      type: Number,
-    },
-    totalShiftComplete: {
-      type: Number,
-    },
-    totalCompensation: {
-      type: Number,
-    },
-    currentCompensation: {
-      type: Number,
     },
   },
   { timestamps: true }
 );
 
-module.exports = mongoose.model("employee", employeeSchema);
+module.exports = mongoose.model("business", businessSchema);

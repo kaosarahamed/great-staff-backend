@@ -1,4 +1,4 @@
-const ShiftModel = require("../models/shift.mode");
+const ShiftModel = require("../models/shift.model");
 
 // Get All Shifts
 async function getAllShifts(req, res) {
@@ -28,23 +28,36 @@ async function getOneShift(req, res) {
 // Create Shifts
 async function createShifts(req, res) {
   const {
+    title,
     startDate,
     startTime,
-    status,
-    location,
-    takenTime,
+    urgency,
+    address,
+    country,
+    state,
+    length,
     description,
-    employeeID,
+    businessId,
+    bonus,
+    compensation,
+    requirements,
+    status,
   } = req.body;
+
   try {
     const newShift = new ShiftModel({
+      title,
       startDate,
       startTime,
-      status,
-      location,
-      takenTime,
+      urgency,
+      location: { address, country, state },
+      length,
       description,
-      employeeID,
+      businessId,
+      bonus,
+      compensation,
+      requirements,
+      status,
     });
     await newShift.save();
     res.status(201).json({ newShift, message: "Created Successful" });
@@ -57,28 +70,57 @@ async function createShifts(req, res) {
 async function updateShifts(req, res) {
   const id = req.params.id;
   const {
+    title,
     startDate,
     startTime,
-    status,
+    urgency,
     location,
-    takenTime,
+    length,
     description,
-    employeeID,
+    businessId,
+    bonus,
+    compensation,
+    requirements,
+    status,
   } = req.body;
+  const { address, country, state } = location;
   const existShift = await ShiftModel.findOne({ _id: id });
   try {
     if (existShift) {
       const updateShift = {
+        title,
         startDate,
         startTime,
-        status,
-        location,
-        takenTime,
+        urgency,
+        location: { address, country, state },
+        length,
         description,
-        employeeID,
+        businessId,
+        bonus,
+        compensation,
+        requirements,
+        status,
       };
       await ShiftModel.findByIdAndUpdate(id, updateShift, { new: true });
       res.status(200).json({ updateShift, message: "Update Successfull" });
+    } else {
+      res.status(400).json({ message: "Shift Not Found!" });
+    }
+  } catch (error) {
+    res.status(500).json(error);
+  }
+}
+
+// update shift status
+async function updateShiftStatus(req, res) {
+  const id = req.params.id;
+  const { status } = req.body;
+  const existShift = await ShiftModel.findOne({ _id: id });
+  try {
+    if (existShift) {
+      const updateShift = { status };
+      await ShiftModel.findByIdAndUpdate(id, updateShift, { new: true });
+      res.status(200).json({ updateShift, message: `Shift ${status}` });
     } else {
       res.status(400).json({ message: "Shift Not Found!" });
     }
@@ -110,4 +152,5 @@ module.exports = {
   createShifts,
   updateShifts,
   deleteShifts,
+  updateShiftStatus,
 };

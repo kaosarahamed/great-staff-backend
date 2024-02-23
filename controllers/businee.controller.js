@@ -1,7 +1,7 @@
 require("dotenv").config();
-const EmployeeModel = require("../models/employee.model");
 const BusinessModel = require("../models/business.model");
-const EmployeeOtpModels = require("../models/employee-otp.model");
+const EmployeeModel = require("../models/employee.model");
+const BusinessOtpModels = require("../models/business-otp.model");
 const bcrypt = require("bcrypt");
 const EMAIL = process.env.EMAIL;
 const PASSWORD = process.env.PASSWORD;
@@ -10,42 +10,43 @@ const nodemailer = require("nodemailer");
 const Mailgen = require("mailgen");
 const jwt = require("jsonwebtoken");
 
-// Get All Employees
-async function getEmployee(req, res) {
+// Get All business
+async function getBusiness(req, res) {
   try {
-    const data = await EmployeeModel.find();
+    const data = await BusinessModel.find();
     res.status(200).json(data);
   } catch (error) {
     res.status(500).json(error);
   }
 }
 
-// Get Single Employees
-async function getOneEmployee(req, res) {
+// Get Single business
+async function getOneBusiness(req, res) {
   const id = req.params.id;
-  const existEmployee = await EmployeeModel.findOne({ _id: id });
+  const existBusiness = await BusinessModel.findOne({ _id: id });
   try {
-    if (!existEmployee) {
-      res.status(400).json({ message: "Employee Not Found" });
+    if (!existBusiness) {
+      res.status(400).json({ message: "Business Not Found!" });
     } else {
-      res.status(200).json(existEmployee);
+      res.status(200).json(existBusiness);
     }
   } catch (error) {
     res.status(500).json(error);
   }
 }
 
-// Register Employees
+// Register business
 async function register(req, res) {
   const { firstName, lastName, email, password, agreement } = req.body;
-  const existEmployee = await EmployeeModel.findOne({ email: email });
   const existBusiness = await BusinessModel.findOne({ email: email });
+  const existEmployee = await EmployeeModel.findOne({ email: email });
+
   try {
-    if (existEmployee || existBusiness) {
+    if (existBusiness || existEmployee) {
       return res.status(404).json({ message: "Email Already Exist" });
     }
     bcrypt.hash(password, 10, async function (err, hash) {
-      const newEmployee = new EmployeeModel({
+      const newBusiness = new BusinessModel({
         firstname: firstName,
         lastname: lastName,
         email,
@@ -53,12 +54,12 @@ async function register(req, res) {
         password: hash,
       });
       const token = jwt.sign(
-        { email: newEmployee.email, id: newEmployee._id },
+        { email: newBusiness.email, id: newBusiness._id },
         SECRET_KEY
       );
-      await newEmployee.save();
+      await newBusiness.save();
       res.status(201).json({
-        employee: newEmployee,
+        business: newBusiness,
         token: "Bearer " + token,
         message: "Registration Successful",
       });
@@ -68,28 +69,28 @@ async function register(req, res) {
   }
 }
 
-// Login Employees
+// Login business
 async function login(req, res) {
   const { email, password } = req.body;
   try {
-    const existEmployee = await EmployeeModel.findOne({ email: email });
-    if (!existEmployee) {
-      return res.status(404).json({ message: "Employee Not Found" });
+    const existBusiness = await BusinessModel.findOne({ email: email });
+    if (!existBusiness) {
+      return res.status(404).json({ message: "Business Not Found!" });
     }
     const matchpassword = await bcrypt.compare(
       password,
-      existEmployee.password
+      existBusiness.password
     );
     if (!matchpassword) {
       return res.status(400).json({ message: "Incorrect Password" });
     }
 
     const token = jwt.sign(
-      { email: existEmployee.email, id: existEmployee._id },
+      { email: existBusiness.email, id: existBusiness._id },
       SECRET_KEY
     );
     res.status(200).json({
-      employee: existEmployee,
+      business: existBusiness,
       token: token,
       message: "Login Successful",
     });
@@ -102,10 +103,10 @@ async function login(req, res) {
 async function otpSend(req, res) {
   const { email } = req.body;
   try {
-    const existEmployee = await EmployeeModel.findOne({ email: email });
-    if (existEmployee) {
+    const existBusiness = await BusinessModel.findOne({ email: email });
+    if (existBusiness) {
       let otp = Math.floor(Math.random() * 10000 + 1);
-      let otpData = new EmployeeOtpModels({
+      let otpData = new BusinessOtpModels({
         email,
         code: otp,
         expireIn: new Date().getTime() + 300 * 1000,
@@ -129,7 +130,7 @@ async function otpSend(req, res) {
       });
       let response = {
         body: {
-          name: existEmployee?.email,
+          name: existBusiness?.email,
           intro: "Reset your password",
           table: {
             data: [
@@ -152,7 +153,7 @@ async function otpSend(req, res) {
         return res.status(200).json({ email: email, message: "OTP Send" });
       });
     } else {
-      res.status(400).json({ message: "Employee Not Found" });
+      res.status(400).json({ message: "Business Not Found!" });
     }
   } catch (error) {
     res.status(500).json(error);
@@ -162,7 +163,7 @@ async function otpSend(req, res) {
 // OTP Check
 async function otpCheck(req, res) {
   try {
-    const data = await EmployeeOtpModels.findOne({ code: req.body.code });
+    const data = await BusinessOtpModels.findOne({ code: req.body.code });
 
     if (data) {
       let currentTime = new Date().getTime();
@@ -184,11 +185,11 @@ async function otpCheck(req, res) {
 async function changePassword(req, res) {
   const { email, password } = req.body;
   try {
-    let emaployee = await EmployeeModel.findOne({ email });
-    if (emaployee) {
+    let business = await BusinessModel.findOne({ email });
+    if (business) {
       bcrypt.hash(password, 10, async function (err, hash) {
-        emaployee.password = hash;
-        await emaployee.save();
+        business.password = hash;
+        await business.save();
         res.status(200).json({ message: "Password Changed" });
       });
     }
@@ -197,31 +198,31 @@ async function changePassword(req, res) {
   }
 }
 
-// Update Employees
-async function updateEmployee(req, res) {
-  const { firstname, lastname, phone, address, dateOfBirth, bio } = req.body;
-
+// Update business
+async function updateBusiness(req, res) {
+  const { firstname, lastname, email, phone, Organization, description } =
+    req.body;
   const id = req.params.id;
-  const existEmployee = await EmployeeModel.findOne({ _id: id });
+  const existBusiness = await BusinessModel.findOne({ _id: id });
   const file = req?.file?.originalname.split(" ").join("-");
   const basePath = `${req.protocol}://${req.get("host")}/public/uploads/`;
   try {
-    if (existEmployee) {
-      const updateEmployee = {
+    if (existBusiness) {
+      const updateBusiness = {
         firstname,
         lastname,
+        email,
         phone,
-        address,
-        dateOfBirth,
-        bio,
+        Organization,
+        description,
         profile: `${basePath ? `${basePath}${file}` : "null"}`,
       };
-      await EmployeeModel.findByIdAndUpdate(id, updateEmployee, {
+      await BusinessModel.findByIdAndUpdate(id, updateBusiness, {
         new: true,
       });
       res
         .status(200)
-        .json({ emaployee: updateEmployee, message: "Update Successful" });
+        .json({ business: updateBusiness, message: "Update Successful" });
     } else {
       res.status(400).json({ message: "Not Found" });
     }
@@ -230,18 +231,18 @@ async function updateEmployee(req, res) {
   }
 }
 
-// Employee password update
-async function updateEmployeePassword(req, res) {
+// business password update
+async function updateBusinessPassword(req, res) {
   const { password } = req.body;
   const id = req.params.id;
-  const existEmployee = await EmployeeModel.findOne({ _id: id });
+  const existBusiness = await BusinessModel.findOne({ _id: id });
   try {
-    if (existEmployee) {
+    if (existBusiness) {
       bcrypt.hash(password, 10, async function (err, hash) {
-        const updateEmployee = {
+        const updateBusiness = {
           password: hash,
         };
-        await EmployeeModel.findByIdAndUpdate(id, updateEmployee, {
+        await BusinessModel.findByIdAndUpdate(id, updateBusiness, {
           new: true,
         });
         res.status(200).json({ message: "Update Successful" });
@@ -254,69 +255,31 @@ async function updateEmployeePassword(req, res) {
   }
 }
 
-// Delete Employees
-async function deleteEmployee(req, res) {
+// Delete business
+async function deleteBusiness(req, res) {
   const id = req.params.id;
-  let existEmployee = await EmployeeModel.findOne({ _id: id });
+  let existBusiness = await BusinessModel.findOne({ _id: id });
   try {
-    if (existEmployee) {
-      await EmployeeModel.findOneAndDelete(id);
+    if (existBusiness) {
+      await BusinessModel.findOneAndDelete(id);
       res.status(200).json({ message: "Account Deleted" });
     } else {
-      res.status(400).json({ message: "Employee Does Not Exist" });
+      res.status(400).json({ message: "Business Does Not Exist" });
     }
   } catch (error) {
     res.status(500).json({ message: "Accoount Delete Failed!" });
   }
 }
 
-// Update Employees tasks
-async function updateEmployeeTasks(req, res) {
-  const { totalHour, totalShiftComplete, totalCompensation } = req.body;
-  const id = req.params.id;
-  const existEmployee = await EmployeeModel.findOne({ _id: id });
-  const existTotalHour = existEmployee?.totalHour
-    ? Number(existEmployee?.totalHour) + totalHour
-    : totalHour;
-  const existTotalShiftComplete = existEmployee?.totalShiftComplete
-    ? Number(existEmployee?.totalShiftComplete) + totalShiftComplete
-    : totalShiftComplete;
-  const existTotalCompensation = existEmployee?.totalCompensation
-    ? Number(existEmployee?.totalCompensation) + totalCompensation
-    : totalCompensation;
-
-  try {
-    if (existEmployee) {
-      const updateEmployee = {
-        totalHour: existTotalHour,
-        totalShiftComplete: existTotalShiftComplete,
-        totalCompensation: existTotalCompensation,
-        currentCompensation: existEmployee?.totalCompensation,
-      };
-      await EmployeeModel.findByIdAndUpdate(id, updateEmployee, {
-        new: true,
-      });
-      res
-        .status(200)
-        .json({ emaployee: updateEmployee, message: "Update Successful" });
-    } else {
-      res.status(400).json({ message: "Not Found" });
-    }
-  } catch (error) {
-    res.status(500).json({ message: "Update Failed" });
-  }
-}
-
 module.exports = {
-  getEmployee,
-  getOneEmployee,
+  getBusiness,
+  getOneBusiness,
   register,
   login,
   otpCheck,
   otpSend,
   changePassword,
-  updateEmployee,
-  updateEmployeePassword,
-  deleteEmployee,
-  updateEmployeeTasks,
+  updateBusiness,
+  updateBusinessPassword,
+  deleteBusiness,
 };

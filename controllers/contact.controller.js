@@ -31,9 +31,9 @@ async function getSingleMessage(req, res) {
 
 // Create Messages
 async function createMessage(req, res) {
-  const { email, userName, messages } = req.body;
+  const { email, userName, messages, subject } = req.body;
   try {
-    const newMessage = new ContactModel({ email, userName, messages });
+    const newMessage = new ContactModel({ email, userName, messages, subject });
     let config = {
       service: "gmail",
       auth: {
@@ -41,19 +41,18 @@ async function createMessage(req, res) {
         pass: PASSWORD,
       },
     };
-    console.log(email);
     let transport = nodemailer.createTransport(config);
     let mailGenarator = new Mailgen({
       theme: "default",
       product: {
-        name: "name",
-        link: "https://name.com",
+        name: "Great Staff",
+        link: "https://geartstaff.com",
       },
     });
     let response = {
       body: {
         name: userName,
-        intro: `Message from ${userName}`,
+        intro: `Message from ${email}`,
         table: {
           data: [
             {
@@ -67,9 +66,9 @@ async function createMessage(req, res) {
 
     let mail = await mailGenarator.generate(response);
     let message = {
-      from: EMAIL,
-      to: email,
-      subject: email,
+      from: email,
+      to: EMAIL,
+      subject: subject,
       html: mail,
     };
     await newMessage.save();
