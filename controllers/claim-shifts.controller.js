@@ -134,9 +134,7 @@ async function updateProgress(req, res) {
         status,
       };
       await ClaimShiftsModel.findByIdAndUpdate(id, updateShift, { new: true });
-      res
-        .status(200)
-        .json({ updateShift, message: "Claim Successful, Shift in-progress" });
+      res.status(200).json({ updateShift, message: "Shift in-progress" });
     } else {
       res.status(400).json({ message: "Job Not Found!" });
     }
