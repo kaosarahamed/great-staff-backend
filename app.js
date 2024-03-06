@@ -5,6 +5,7 @@ const cors = require("cors");
 const auth = require("./middlewares/auth");
 const employeeRouter = require("./routes/emaployee.route");
 const businessRouter = require("./routes/business.route");
+const ClientRouter = require("./routes/client.route");
 const shiftRouter = require("./routes/shifts.route");
 const claimShiftsRouter = require("./routes/claim-shifts.route");
 const messageRouter = require("./routes/contact.route");
@@ -23,6 +24,8 @@ app.use(
 app.use("/auth/employee", employeeRouter);
 // Businee Route
 app.use("/auth/business", businessRouter);
+// Businee Route
+app.use("/auth/client", ClientRouter);
 // Shift Route
 app.use("/auth/shift", shiftRouter);
 // Job Route

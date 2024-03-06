@@ -28,7 +28,7 @@ const shiftSchema = mongoose.Schema(
     description: {
       type: String,
     },
-    businessId: {
+    creatorId: {
       type: String,
     },
     requirements: {
